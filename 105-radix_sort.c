@@ -1,56 +1,76 @@
 #include "sort.h"
 
 /**
- * radix_sort - sorts an array following the Radix sort algorithm
- * @array: array of ints to sort
+ * radix_sort - sort array with radix method
+ * @array: array to sort
  * @size: size of the array
- */
+ *
+ * Return: nothing
+*/
+
 void radix_sort(int *array, size_t size)
 {
-	int max;
-	size_t i, lsd;
+	int i, j, x, y, cantRep, max, div = 1, t = 0;
+	int buckets[10][1000];
 
 	if (!array || size < 2)
 		return;
 
-	max = 0;
-	for (i = 0; i < size; i++)
+	max = array[0];
+	for (i = 1; i < (int) size; i++)
 		if (array[i] > max)
 			max = array[i];
 
-	for (lsd = 1; max / lsd > 0; lsd *= 10)
+	for (i = 0; i < 10; ++i)
+		for (j = 0; j < 1000; ++j)
+			buckets[i][j] = -1;
+
+	cantRep = getCantRep(max);
+
+	for (i = 0; i < cantRep; ++i)
 	{
-		count_sort_LSD(array, size, lsd);
+		for (j = 0; j < (int) size; ++j)
+		{
+			for (y = 0; buckets[(array[j] / div) % 10][y] != -1; y++)
+				;
+			buckets[(array[j] / div) % 10][y] = array[j];
+		}
+		div = div * 10;
+		t = 0;
+		for (x = 0; x < 10; ++x)
+		{
+			for (y = 0; buckets[x][y] != -1; y++)
+			{
+				array[t] = buckets[x][y];
+				buckets[x][y] = -1;
+				t++;
+			}
+		}
 		print_array(array, size);
 	}
 }
 
 /**
- * count_sort_LSD - count sort with LSD
- * @array: array to sort
- * @size: size of the array
- * @lsd: least significant digit
- */
-void count_sort_LSD(int *array, size_t size, size_t lsd)
+ * getCantRep - Returns the number of digits of the largest number in the array
+ * @num: The largest number
+ *
+ * Return: Number of digits of the num
+*/
+
+int getCantRep(int num)
 {
-	int count_arr[10] = {0}, *out_arr, l, m;
-	size_t k, n;
+	bool flag = true;
+	int cont = 0;
 
-	out_arr = malloc(sizeof(int) * size);
-
-	for (k = 0; k < size; k++)
-		count_arr[(array[k] / lsd) % 10]++;
-	for (l = 1; l < 10; l++)
-		count_arr[l] += count_arr[l - 1];
-
-	for (m = size - 1; m >= 0; m--)
+	while (flag)
 	{
-		out_arr[count_arr[(array[m] / lsd) % 10] - 1] = array[m];
-		count_arr[(array[m] / lsd) % 10]--;
+		flag = false;
+		if (num > 0)
+		{
+			num = num / 10;
+			cont++;
+			flag = true;
+		}
 	}
-
-	for (n = 0; n < size; n++)
-		array[n] = out_arr[n];
-
-	free(out_arr);
+	return (cont);
 }
